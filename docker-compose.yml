@@ -11,6 +11,8 @@ services:
       VITE_API_URL: http://98.80.178.32:8000 # Backend service URL
     depends_on:
       - backend # Ensure the backend service starts first
+    networks:
+      - app_network
 
   backend:
     build:
