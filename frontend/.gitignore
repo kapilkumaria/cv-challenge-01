@@ -32,3 +32,7 @@ htmlcov
 .cache
 .venv
 postgres_data/
+node_modules
+dist
+.git
+*.log

@@ -6,7 +6,7 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
 
 # Copy the frontend files
-COPY frontend/ ./
+COPY . ./
 
 # Inject the backend API URL into the build process
 ARG VITE_API_URL
