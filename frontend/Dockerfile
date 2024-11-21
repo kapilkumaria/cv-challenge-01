@@ -1,22 +1,33 @@
 # Stage 1: Build
-FROM node:16 AS build
+FROM node:16-alpine as build
 
+# Set working directory inside the container
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json ./
+
+# Copy package.json and package-lock.json to install dependencies
+COPY package.json package-lock.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy the frontend files
-COPY . ./
+# Copy the rest of the application code
+COPY . .
 
-# Inject the backend API URL into the build process
-ARG VITE_API_URL
-ENV VITE_API_URL=${VITE_API_URL}
-
-# Build the frontend
+# Build the application
 RUN npm run build
 
-# Stage 2: Serve
+# Stage 2: Serve with Nginx
 FROM nginx:alpine
+
+# Copy the built files from the first stage
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy custom Nginx configuration, if needed (optional)
+# COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose port 80
 EXPOSE 80
+
+# Start Nginx server
 CMD ["nginx", "-g", "daemon off;"]
+
