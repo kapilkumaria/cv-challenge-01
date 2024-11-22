@@ -1,16 +1,40 @@
 version: '3.8'
 
 services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.insecure=true" # Enable Traefik dashboard (remove in production for security)
+      - "--providers.docker=true" # Enable Docker provider
+      - "--providers.docker.exposedbydefault=false" # Disable exposing all containers by default
+      - "--entrypoints.web.address=:80" # HTTP entrypoint
+      - "--entrypoints.websecure.address=:443" # HTTPS entrypoint
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true" # TLS challenge for Let's Encrypt
+      - "--certificatesresolvers.myresolver.acme.email=your-email@example.com" # Replace with your email
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json" # Certificate storage
+    ports:
+      - "80:80" # HTTP
+      - "443:443" # HTTPS
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Required for Traefik to interact with Docker
+      - ./traefik_data:/letsencrypt # Persistent volume for certificates
+    networks:
+      - app_network
+
   frontend:
     build:
       context: ./frontend # Adjust the path to your frontend directory
       dockerfile: Dockerfile
-    ports:
-      - "3000:80" # Map port 3000 on host to port 80 in the container
     environment:
-      VITE_API_URL: http://98.80.178.32:8000 # Backend service URL
+      VITE_API_URL: http://backend:8000 # Backend service URL (internal networking)
     depends_on:
       - backend # Ensure the backend service starts first
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80" # Port inside the container
     networks:
       - app_network
 
@@ -18,10 +42,15 @@ services:
     build:
       context: ./backend
     container_name: backend
-    ports:
-      - "8000:8000" # Adjust port mapping as needed
     environment:
-      POSTGRES_URL: postgresql://app:kapil123@postgres:5432/app
+      POSTGRES_URL: postgresql://app:kapil123@db:5432/app # Use internal networking for DB
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000" # Port inside the container
+      - "traefik.http.routers.swagger.rule=PathPrefix(`/docs`)" # For FastAPI Swagger docs
+      - "traefik.http.routers.swagger.entrypoints=web"
     networks:
       - app_network
 
@@ -34,14 +63,16 @@ services:
       POSTGRES_DB: app
     networks:
       - app_network
-    ports:
-      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
 
 volumes:
   db_data:
+    driver: local
+  traefik_data:
+    driver: local
 
 networks:
   app_network:
+    driver: bridge
 
