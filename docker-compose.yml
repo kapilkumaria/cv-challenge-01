@@ -6,6 +6,8 @@ services:
     container_name: traefik
     command:
       - "--api.insecure=true" # Enable Traefik dashboard (remove in production for security)
+      - "--api.dashboard=true"
+      - "--providers.docker"
       - "--ping=true" # Enable healthcheck endpoint
       - "--ping.entryPoint=web"
       - "--providers.docker=true" # Enable Docker provider
@@ -17,6 +19,12 @@ services:
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json" # Persistent storage for certificates
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure" # Redirect HTTP to HTTPS
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https" # Ensure redirection uses HTTPS
+      - "--log.level=DEBUG"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "80:80" # HTTP
       - "443:443" # HTTPS
