@@ -28,11 +28,6 @@ services:
       sh -c "touch /letsencrypt/acme.json && \
              chmod 600 /letsencrypt/acme.json && \
              exec traefik"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
     networks:
       - app_network
 
@@ -50,11 +45,6 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=80" # Port inside the container
       - "traefik.http.routers.frontend.tls.certresolver=myresolver" # Enable TLS frontend
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
     networks:
       - app_network
 
@@ -74,12 +64,6 @@ services:
       - "traefik.http.routers.swagger.entrypoints=websecure"
       - "traefik.http.services.swagger.loadbalancer.server.port=8000"
       - "traefik.http.routers.swagger.tls.certresolver=myresolver" # Enable TLS for Swagger
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
     networks:
       - app_network
 
@@ -90,11 +74,6 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: kapil123
       POSTGRES_DB: app
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
     networks:
       - app_network
     volumes:
