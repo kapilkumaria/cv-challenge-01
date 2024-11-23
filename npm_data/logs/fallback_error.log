@@ -1,0 +1,14 @@
+2024/11/23 09:21:35 [error] 183#183: *16 open() "/var/www/html/loki" failed (2: No such file or directory), client: 44.204.205.24, server: localhost-nginx-proxy-manager, request: "GET /loki HTTP/1.1", host: "44.204.205.24"
+2024/11/23 09:22:08 [error] 183#183: *23 open() "/var/www/html/loki" failed (2: No such file or directory), client: 50.66.177.15, server: localhost-nginx-proxy-manager, request: "GET /loki HTTP/1.1", host: "44.204.205.24"
+2024/11/23 09:22:11 [error] 183#183: *23 open() "/var/www/html/loki" failed (2: No such file or directory), client: 50.66.177.15, server: localhost-nginx-proxy-manager, request: "GET /loki HTTP/1.1", host: "44.204.205.24"
+2024/11/23 09:22:20 [error] 183#183: *25 open() "/var/www/html/loki" failed (2: No such file or directory), client: 50.66.177.15, server: localhost-nginx-proxy-manager, request: "GET /loki HTTP/1.1", host: "44.204.205.24"
+2024/11/23 09:22:20 [warn] 183#183: 512 worker_connections are not enough, reusing connections
+2024/11/23 09:22:20 [alert] 183#183: 512 worker_connections are not enough
+2024/11/23 09:22:20 [error] 184#184: *1032 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: 127.0.0.1, server: localhost-nginx-proxy-manager, request: "GET /favicon.ico HTTP/1.1", upstream: "http://127.0.0.1:80/favicon.ico", host: "44.204.205.24", referrer: "http://44.204.205.24/loki"
+2024/11/23 09:22:29 [error] 183#183: *25 open() "/var/www/html/prometheus" failed (2: No such file or directory), client: 50.66.177.15, server: localhost-nginx-proxy-manager, request: "GET /prometheus HTTP/1.1", host: "44.204.205.24"
+2024/11/23 09:22:43 [error] 183#183: *25 open() "/var/www/html/prometheus" failed (2: No such file or directory), client: 50.66.177.15, server: localhost-nginx-proxy-manager, request: "GET /prometheus HTTP/1.1", host: "44.204.205.24"
+2024/11/23 09:23:10 [error] 183#183: *25 open() "/var/www/html/prometheus" failed (2: No such file or directory), client: 50.66.177.15, server: localhost-nginx-proxy-manager, request: "GET /prometheus HTTP/1.1", host: "44.204.205.24"
+2024/11/23 09:23:14 [error] 183#183: *25 open() "/var/www/html/loki" failed (2: No such file or directory), client: 50.66.177.15, server: localhost-nginx-proxy-manager, request: "GET /loki HTTP/1.1", host: "44.204.205.24"
+2024/11/23 09:26:11 [alert] 183#183: 512 worker_connections are not enough
+2024/11/23 09:26:11 [error] 184#184: *2029 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: 127.0.0.1, server: localhost-nginx-proxy-manager, request: "GET /favicon.ico HTTP/1.1", upstream: "http://127.0.0.1:80/favicon.ico", host: "ec2-44-204-205-24.compute-1.amazonaws.com"
+2024/11/23 10:01:21 [error] 308#308: *2701 open() "/var/www/html/api/live/ws" failed (2: No such file or directory), client: 50.66.177.15, server: localhost-nginx-proxy-manager, request: "GET /api/live/ws HTTP/1.1", host: "44.204.205.24"

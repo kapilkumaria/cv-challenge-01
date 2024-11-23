@@ -74,7 +74,7 @@ services:
       POSTGRES_URL: postgresql://app:kapil123@db:5432/app # Use internal networking for DB
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || Path(`/`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.services.backend.loadbalancer.server.port=8000" # Port inside the container
       - "traefik.http.routers.backend.tls.certresolver=myresolver" # Enable TLS for backend
