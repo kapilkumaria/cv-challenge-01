@@ -16,6 +16,7 @@ services:
     ports:
       - "80:80" # HTTP
       - "443:443" # HTTPS
+      - "8080:8080" # Traefik Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Required for Traefik to interact with Docker
       - ./traefik_data:/letsencrypt # Persistent volume for certificates
@@ -47,10 +48,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.services.backend.loadbalancer.server.port=8000" # Port inside the container
       - "traefik.http.routers.swagger.rule=PathPrefix(`/docs`)" # For FastAPI Swagger docs
-      - "traefik.http.routers.swagger.entrypoints=web"
+      - "traefik.http.routers.swagger.entrypoints=websecure"
+      - "traefik.http.services.swagger.loadbalancer.server.port=8000"
     networks:
       - app_network
 
