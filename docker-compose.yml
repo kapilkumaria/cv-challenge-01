@@ -22,12 +22,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Required for Traefik to interact with Docker
       - ./traefik_data:/letsencrypt # Persistent volume for certificates
-    entrypoint:
-      - sh
-      - -c
-      - |
-        touch /letsencrypt/acme.json && chmod 600 /letsencrypt/acme.json
-        /entrypoint.sh
+    entrypoint: >
+      sh -c "touch /letsencrypt/acme.json && \
+             chmod 600 /letsencrypt/acme.json && \
+             exec traefik"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
       interval: 10s
