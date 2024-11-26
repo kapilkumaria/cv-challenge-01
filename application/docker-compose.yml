@@ -1,5 +1,20 @@
 version: '3'
 services:
+  nginx_test:
+    image: nginx
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx.rule=Host(`nginx.kapilkumaria.com`)"
+ #     - "traefik.http.routers.nginx.rule=Host(`kapilkumaria.com/nginx`)"
+      #- "traefik.http.routers.nginx.rule=Host(`kapilkumaria.com`) && PathPrefix(`/nginx`)"
+      - "traefik.http.routers.nginx.entrypoints=websecure"
+      - "traefik.http.routers.nginx.tls=true"
+      - "traefik.http.routers.nginx.tls.certresolver=myresolver"
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    networks:
+      - app_network
+
   frontend:
     build:
       context: ../frontend # Adjust the path to your frontend directory
@@ -11,7 +26,6 @@ services:
       - backend # Ensure the backend service starts first
     labels:
       - "traefik.enable=true"
-   #   - "traefik.http.routers.frontend.rule=Host(`kapilkumaria.com`) && PathPrefix(`/`)"
       - "traefik.http.routers.frontend.rule=Host(`kapilkumaria.com`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls=true"
@@ -28,6 +42,9 @@ services:
       POSTGRES_URL: postgresql://app:kapil123@db:5432/app # Use internal networking for DB
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.kapilkumaria.com`)"
+      #- "traefik.http.routers.backend.rule=Host(`kapilkumaria.com`) && PathPrefix(`/api`)"
+      #- "traefik.http.routers.backend.rule=Host(`kapilkumaria.com/api`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"      
