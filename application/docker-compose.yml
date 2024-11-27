@@ -17,8 +17,7 @@ services:
 
   frontend:
     build:
-      context: ../frontend # Adjust the path to your frontend directory
-      #dockerfile: ../frontend/Dockerfile
+      context: ../frontend # Adjust the path to your frontend directory      
     container_name: frontend
     environment:
       VITE_API_URL: http://backend # Backend service URL (internal networking)
@@ -41,21 +40,12 @@ services:
     container_name: backend
     environment:
       POSTGRES_URL: postgresql://app:kapil123@db:5432/app # Use internal networking for DB
-    labels:
-      
+    labels:      
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`boss.kapilkumaria.com`) && (PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`))"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.tls.certresolver=myresolver"  
-      - "traefik.http.services.nginx_test.loadbalancer.server.port=8000"
-
-      # - "traefik.enable=true"
-      # - "traefik.http.routers.backend.rule=Host(`kapilkumaria.com`) && (PathPrefix(`/api`) || PathPrefix(`/docs') || PathPrefix(`/redoc'))"
-      # - "traefik.http.routers.backend.entrypoints=websecure"
-      # - "traefik.http.routers.backend.tls=true"
-      # - "traefik.http.routers.backend.tls.certresolver=myresolver"  
-      # - "traefik.http.services.nginx_test.loadbalancer.server.port=8000"    
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"            
     networks:
       - app_network
 
