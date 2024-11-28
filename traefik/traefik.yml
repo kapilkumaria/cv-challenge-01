@@ -1,18 +1,31 @@
----
-entryPoints:
-  web:
-    address: ":80"
-  websecure:
-    address: ":443"
-
-certificatesResolvers:
-  myresolver:
-    acme:
-      email: kapil.kumaria@gmail.com
-      storage: acme.json
-      httpChallenge:
-        entryPoint: web
-
-providers:
-  docker:
-    exposedByDefault: false
+http:
+  routers:
+    to-adminer:
+      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/db)"
+      middlewares:
+        - adminer-strip
+      service: adminer
+    to-backend:
+      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/api) || PathPrefix(/docs)"
+      middlewares:
+        - backend-strip
+      service: backend
+  middlewares:
+    adminer-strip:
+      stripprefix:
+        prefixes:
+          - /db
+    backend-strip:
+      stripprefix:
+        prefixes:
+          - /api
+          - /docs
+  services:
+    adminer:
+      loadBalancer:
+        servers:
+          - port: 8080
+    backend:
+      loadBalancer:
+        servers:
+          - port: 5000
