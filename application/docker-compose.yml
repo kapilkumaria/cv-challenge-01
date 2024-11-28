@@ -4,7 +4,7 @@ services:
     image: nginx
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nginx.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/nginx`)"
+      - "traefik.http.routers.nginx.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/nginx`)"          
       - "traefik.http.routers.nginx.entrypoints=websecure"
       - "traefik.http.routers.nginx.tls=true"
       - "traefik.http.routers.nginx.tls.certresolver=myresolver"
@@ -12,7 +12,7 @@ services:
       # Middleware: StripPrefix
       - "traefik.http.middlewares.nginx-stripprefix.stripprefix.prefixes=/nginx"
       # Apply middleware to the router
-      - "traefik.http.routers.nginx.middlewares=backend-stripprefix"       
+      - "traefik.http.routers.nginx.middlewares=nginx-stripprefix"
     volumes:
       - ./html:/usr/share/nginx/html:ro
     networks:

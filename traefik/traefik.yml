@@ -1,5 +1,15 @@
 http:
   routers:
+  to-nginx:
+      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/nginx)"
+      middlewares:
+        - nginx-strip
+      service: nginx_test
+    to-backend:
+      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/api) || PathPrefix(/docs)"
+      middlewares:
+        - backend-strip
+      service: backend
     to-adminer:
       rule: "Host(boss.kapilkumaria.com) && PathPrefix(/db)"
       middlewares:
