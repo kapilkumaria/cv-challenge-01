@@ -4,12 +4,15 @@ services:
     image: nginx
     labels:
       - "traefik.enable=true"
-    #  - "traefik.http.routers.nginx.rule=Host(`kapilkumaria.com/nginx/`)"
       - "traefik.http.routers.nginx.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/nginx`)"
       - "traefik.http.routers.nginx.entrypoints=websecure"
       - "traefik.http.routers.nginx.tls=true"
       - "traefik.http.routers.nginx.tls.certresolver=myresolver"
       - "traefik.http.services.nginx_test.loadbalancer.server.port=80"
+      # Middleware: StripPrefix
+      - "traefik.http.middlewares.nginx-stripprefix.stripprefix.prefixes=/nginx"
+      # Apply middleware to the router
+      - "traefik.http.routers.nginx.middlewares=backend-stripprefix"       
     volumes:
       - ./html:/usr/share/nginx/html:ro
     networks:
@@ -21,7 +24,6 @@ services:
     container_name: frontend
     environment:
       VITE_API_URL: http://backend # Backend service URL (internal networking)
-      #VITE_API_URL: https://kapilkumaria.com # Backend service URL (internal networking)
     depends_on:
       - backend # Ensure the backend service starts first
     labels:
@@ -35,20 +37,47 @@ services:
 
   backend:
     build:
-      context: ../backend
-      #dockerfile: ../backend/Dockerfile
+      context: ../backend      
     container_name: backend
     environment:
       POSTGRES_URL: postgresql://app:kapil123@db:5432/app # Use internal networking for DB
     labels:      
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`boss.kapilkumaria.com`) && (PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`))"
+      # Router configuration
+      - "traefik.http.routers.backend.rule=Host(`boss.kapilkumaria.com`) && (PathPrefix(`/api`) || PathPrefix(`/redocs`))"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.tls.certresolver=myresolver"            
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"    
+      # Service configuration
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      # Middleware: StripPrefix
+      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api,/redoc"
+      # Apply middleware to the router
+      - "traefik.http.routers.backend.middlewares=backend-stripprefix"       
+      - "traefik.http.middlewares.example.stripprefix.forceSlash=false"
     networks:
       - app_network
 
+  swagger:
+    image: swaggerapi/swagger-ui
+    container_name: swagger
+    labels:
+      - "traefik.enable=true"
+      # Router configuration
+      - "traefik.http.routers.swagger.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/docs`)"
+      - "traefik.http.routers.swagger.entrypoints=websecure"
+      - "traefik.http.routers.swagger.tls=true"
+      - "traefik.http.routers.swagger.tls.certresolver=myresolver"
+      # Service configuration
+      - "traefik.http.services.swagger.loadbalancer.server.port=8080" # Replace 8080 with the correct Swagger port
+      # Middleware: StripPrefix for /docs
+      - "traefik.http.middlewares.swagger-stripprefix.stripprefix.prefixes=/docs"
+      # Apply middleware to the router
+      - "traefik.http.routers.swagger.middlewares=swagger-stripprefix"
+      - "traefik.http.middlewares.example.stripprefix.forceSlash=false"
+    networks:
+      - app_network  
+    
   db:
     image: postgres:13-alpine
     container_name: postgres
@@ -65,6 +94,21 @@ services:
       - app_network
     volumes:
       - db_data:/var/lib/postgresql/data
+    restart: always
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: always
+    networks:
+      - app_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`kapilkumaria.com`) && PathPrefix(`/adminer`)"
+      #- "traefik.http.routers.adminer.rule=Host(`db.domain`)"
+      - "traefik.http.routers.adminer.entrypoints=websecure"
+      - "traefik.http.routers.adminer.tls=true"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080" # Adminer internal port
 
 volumes:
   db_data:
