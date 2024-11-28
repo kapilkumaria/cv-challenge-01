@@ -1,6 +1,6 @@
 http:
   routers:
-  to-nginx:
+    to-nginx_test:
       rule: "Host(boss.kapilkumaria.com) && PathPrefix(/nginx)"
       middlewares:
         - nginx-strip
@@ -21,6 +21,10 @@ http:
         - backend-strip
       service: backend
   middlewares:
+    nginx-strip:
+      stripprefix:
+        prefixes:
+          - /nginx
     adminer-strip:
       stripprefix:
         prefixes:
@@ -31,6 +35,10 @@ http:
           - /api
           - /docs
   services:
+    nginx_test:
+      loadBalancer:
+        servers:
+          - port: 80
     adminer:
       loadBalancer:
         servers:

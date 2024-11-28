@@ -43,11 +43,11 @@ services:
       - app_network
     logging: *default-logging
   
-networks:
-  app_network:
-    driver: bridge
-
 # networks:
 #   app_network:
-#     external: true
+#     driver: bridge
+
+networks:
+  app_network:
+    external: true
 
