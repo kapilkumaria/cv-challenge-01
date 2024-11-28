@@ -44,7 +44,7 @@ services:
     logging: *default-logging
   
 networks:
-  backend_network:
+  app_network:
     driver: bridge
 
 # networks:
