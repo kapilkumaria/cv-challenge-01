@@ -1,74 +1,72 @@
 http:
   routers:
-    # to-nginx_test:
-    #   rule: "Host(boss.kapilkumaria.com) && PathPrefix(/nginx)"
-    #   middlewares:
-    #     - nginx-strip
-    #   service: nginx_test    
+    to-nginx_test:
+      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/nginx)"
+      middlewares:
+        - nginx-strip
+      service: nginx_test    
     to-backend:
       rule: "Host(boss.kapilkumaria.com) && PathPrefix(/api) || PathPrefix(/docs)"
       middlewares:
         - backend-strip
       service: backend    
-    # to-adminer:
-    #   rule: "Host(boss.kapilkumaria.com) && PathPrefix(/db)"
+    to-adminer:
+      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/db)"
+      middlewares:
+        - adminer-strip
+      service: adminer    
+    # to-swagger:
+    #   rule: "Host(boss.kapilkumaria.com) && PathPrefix(/swagger)"
     #   middlewares:
-    #     - adminer-strip
-    #   service: adminer    
-    to-swagger:
-      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/swagger)"
-      middlewares:
-        - swagger-strip
-      service: swagger-ui    
-    to-prometheus:
-      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/prometheus)"
-      middlewares:
-        - prometheus-strip
-      service: prometheus  
+    #     - swagger-strip
+    #   service: swagger-ui    
+    # to-prometheus:
+    #   rule: "Host(boss.kapilkumaria.com) && PathPrefix(/prometheus)"
+    #   middlewares:
+    #     - prometheus-strip
+    #   service: prometheus  
   
   middlewares:
-    # nginx-strip:
-    #   stripprefix:
-    #     prefixes:
-    #       - /nginx
-  
-    # adminer-strip:
-    #   stripprefix:
-    #     prefixes:
-    #       - /db  
+    nginx-strip:
+      stripprefix:
+        prefixes:
+          - /nginx
+    adminer-strip:
+      stripprefix:
+        prefixes:
+          - /db  
     backend-strip:
       stripprefix:
         prefixes:
           - /api
           - /docs  
-    swagger-strip:
-      stripprefix:
-        prefixes:
-          - /swagger  
-    prometheus-strip:
-      stripprefix:
-        prefixes:
-          - /prometheus                  
+    # swagger-strip:
+    #   stripprefix:
+    #     prefixes:
+    #       - /swagger  
+    # prometheus-strip:
+    #   stripprefix:
+    #     prefixes:
+    #       - /prometheus                  
   
   services:
-    # nginx_test:
-    #   loadBalancer:
-    #     servers:
-    #       - port: 80
-  
-    # adminer:
-    #   loadBalancer:
-    #     servers:
-    #       - port: 8080  
+    nginx_test:
+      loadBalancer:
+        servers:
+          - port: 80
+    adminer:
+      loadBalancer:
+        servers:
+          - port: 8080  
     backend:
       loadBalancer:
         servers:
           - port: 5000  
-    swagger-ui:
-      loadBalancer:
-        servers:
-          - port: 8080  
-    prometheus:
-      loadBalancer:
-        servers:
-          - port: 9090
+    # swagger-ui:
+    #   loadBalancer:
+    #     servers:
+    #       - port: 8080  
+    # prometheus:
+    #   loadBalancer:
+    #     servers:
+    #       - port: 9090

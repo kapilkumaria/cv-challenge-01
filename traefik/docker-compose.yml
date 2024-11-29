@@ -31,6 +31,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/dashboard`)"
+      # - "traefik.http.middlewares.frontend-stripprefix.stripprefix.prefixes=/dashboard"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
