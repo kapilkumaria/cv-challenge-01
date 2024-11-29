@@ -20,6 +20,11 @@ http:
       middlewares:
         - backend-strip
       service: backend
+    to-swagger:
+      rule: "Host(boss.kapilkumaria.com) && PathPrefix(/swagger)"
+      middlewares:
+        - swagger-strip
+      service: swagger-ui
   middlewares:
     nginx-strip:
       stripprefix:
@@ -34,6 +39,10 @@ http:
         prefixes:
           - /api
           - /docs
+    swagger-strip:
+      stripprefix:
+        prefixes:
+          - /swagger          
   services:
     nginx_test:
       loadBalancer:
@@ -47,3 +56,7 @@ http:
       loadBalancer:
         servers:
           - port: 5000
+    swagger-ui:
+      loadBalancer:
+        servers:
+          - port: 8080

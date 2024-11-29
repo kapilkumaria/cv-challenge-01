@@ -32,11 +32,17 @@ services:
     depends_on:
       - backend # Ensure the backend service starts first
     environment:
-      - VITE_API_URL=http://backend # Backend service URL (internal networking)
+      - NODE_ENV=production
+      - VITE_API_URL=http://localhost:8000 # Backend service URL (internal networking)
+    volumes:
+      - ../:/app
+      - /app/node_modules
+    ports:
+      - "8082:80"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/`)"
-      - "traefik.http.middlewares.frontend-stripprefix.stripprefix.prefixes=/api,/docs"
+      - "traefik.http.middlewares.frontend-stripprefix.stripprefix.prefixes=/"
       - "traefik.http.routers.frontend.middlewares=frontend-stripprefix"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
       - "traefik.http.routers.frontend.tls=true"
@@ -49,83 +55,103 @@ services:
 
   backend:
     build:
-      context: ../backend      
+      context: ../backend   
+      dockerfile: Dockerfile   
     container_name: backend
+    depends_on:
+     - postgres
+    ports:
+      - "8000:8000"
     environment:
-      POSTGRES_URL: postgresql://app:kapil123@db:5432/app # Use internal networking for DB
+      - POSTGRES_URL=postgresql://postgres:1234567890@postgres:5432/fastapi
+    env_file:
+      - ../backend/.env
+    volumes:
+      - ../backend:/app/backend
     labels:      
       - "traefik.enable=true"
       # Router configuration
       - "traefik.http.routers.backend.rule=Host(`boss.kapilkumaria.com`) && (PathPrefix(`/api`) || PathPrefix(`/redocs`))"
-      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api,/redocs"
+      - "traefik.http.routers.backend.middlewares=backend-stripprefix"
       - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"    
       # Service configuration
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      # Middleware: StripPrefix
-      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api,/redoc"
-      # Apply middleware to the router
-      - "traefik.http.routers.backend.middlewares=backend-stripprefix"       
-      - "traefik.http.middlewares.example.stripprefix.forceSlash=false"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"    
     networks:
       - app_network
+    command: /bin/sh -c "chmod +x /app/backend/prestart.sh && poetry run bash /app/backend/prestart.sh && poetry run uvicorn app.main:app --reload --host 0.0.0.0"
+    logging: *default-logging
 
-  swagger:
-    image: swaggerapi/swagger-ui
-    container_name: swagger
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: swagger-ui
+    environment:
+      - SWAGGER_JSON=http://backend:8000/api/v1/openapi.json # Points to the backend's OpenAPI schema
+    ports:
+      - "8081:8080"
     labels:
       - "traefik.enable=true"
-      # Router configuration
-      - "traefik.http.routers.swagger.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/docs`)"
+      - "traefik.http.routers.swagger.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/swagger`)"
+      - "traefik.http.middlewares.swagger-stripprefix.stripprefix.prefixes=/swagger"
+      - "traefik.http.routers.swagger.middlewares=swagger-ui-stripprefix"
       - "traefik.http.routers.swagger.entrypoints=websecure"
       - "traefik.http.routers.swagger.tls=true"
       - "traefik.http.routers.swagger.tls.certresolver=myresolver"
-      # Service configuration
-      - "traefik.http.services.swagger.loadbalancer.server.port=8080" # Replace 8080 with the correct Swagger port
-      # Middleware: StripPrefix for /docs
-      - "traefik.http.middlewares.swagger-stripprefix.stripprefix.prefixes=/docs"
-      # Apply middleware to the router
-      - "traefik.http.routers.swagger.middlewares=swagger-stripprefix"
-      - "traefik.http.middlewares.example.stripprefix.forceSlash=false"
-    networks:
-      - app_network  
-    
-  db:
-    image: postgres:13-alpine
-    container_name: postgres
-    environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: kapil123
-      POSTGRES_DB: app
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      - "traefik.http.services.swagger.loadbalancer.server.port=8080"
     networks:
       - app_network
+    depends_on:
+      - backend
+    logging: *default-logging
+
+      
+  postgres:
+    image: postgres:13
+    container_name: fastapi-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234567890
+      POSTGRES_DB: fastapi
     volumes:
       - db_data:/var/lib/postgresql/data
+    ports:
+      - "8900:5432"
+    networks:
+      - app_network
+    logging: *default-logging
     restart: always
 
   adminer:
     image: adminer:latest
     container_name: adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: galkaev
+    depends_on:
+      - postgres
+    ports:
+      - 9001:8080
     restart: always
-    networks:
-      - app_network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.adminer.rule=Host(`kapilkumaria.com`) && PathPrefix(`/adminer`)"
-      #- "traefik.http.routers.adminer.rule=Host(`db.domain`)"
+      - "traefik.http.routers.adminer.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/db`)"
+      - "traefik.http.middlewares.adminer-stripprefix.stripprefix.prefixes=/api,/docs"
+      - "traefik.http.routers.adminer.middlewares=adminer-stripprefix"
       - "traefik.http.routers.adminer.entrypoints=websecure"
+      - "traefik.http.routers.adminer.tls.certresolver=myresolver"
+      - "traefik.http.middlewares.adminer-strip.stripprefix.prefixes=/db"
+      - "traefik.http.routers.adminer.middlewares=adminer-strip"
       - "traefik.http.routers.adminer.tls=true"
-      - "traefik.http.services.adminer.loadbalancer.server.port=8080" # Adminer internal port
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+    networks:
+      - app_network
+    logging: *default-logging
 
 volumes:
   db_data:
     driver: local  
-
 networks:
   app_network:
     external: true
