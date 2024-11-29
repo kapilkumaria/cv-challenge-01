@@ -94,8 +94,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.swagger.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/swagger`)"
-      # - "traefik.http.middlewares.swagger-stripprefix.stripprefix.prefixes=/swagger"
-      # - "traefik.http.routers.swagger.middlewares=swagger-ui-stripprefix"
+      - "traefik.http.middlewares.swagger-stripprefix.stripprefix.prefixes=/swagger"
+      - "traefik.http.routers.swagger.middlewares=swagger-ui-stripprefix"
+      - "traefik.http.middlewares.swagger-strip.stripprefix.prefixes=/swagger"
+      - "traefik.http.routers.swagger.middlewares=swagger-strip"
       - "traefik.http.routers.swagger.entrypoints=websecure"
       - "traefik.http.routers.swagger.tls=true"
       - "traefik.http.routers.swagger.tls.certresolver=myresolver"
