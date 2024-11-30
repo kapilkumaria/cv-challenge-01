@@ -6,6 +6,54 @@ x-logging: &default-logging
     max-file: "1"
 
 services:
+  # traefik:
+  #   image: traefik:v2.10.1
+  #   restart: unless-stopped
+  #   command:
+  #     - "--entrypoints.web.address=:80"
+  #     - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+  #     - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+  #     - "--entrypoints.websecure.address=:443"
+  #     - "--providers.docker=true"
+  #     - "--providers.docker.exposedByDefault=false"
+  #     - "--api"
+  #     - "--certificatesresolvers.letsencryptresolver.acme.email=kapil.kumaria@gmail.com"
+  #     - "--certificatesresolvers.letsencryptresolver.acme.storage=/acme.json"
+  #     - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"
+  #     - "--accesslog=true"
+  #     - "--log.level=ERROR"
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #     - 8080:8080
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - /home/ubuntu/cv-challenge01/traefik/letsencrypt/acme.json:/acme.json
+  #   labels:
+  #     - "traefik.enable=true"
+  #     # HTTP Router
+  #     - "traefik.http.routers.traefik-http.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
+  #     - "traefik.http.routers.traefik-http.entrypoints=web"
+  #     - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
+  #     # www to non-www redirect
+  #     - "traefik.http.routers.traefik-https.middlewares=www-to-non-www"
+  #     # HTTP to HTTPS redirect
+  #     - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https?://www\\.(.+)"
+  #     - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
+  #     - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
+  #     # HTTPS Router
+  #     - "traefik.http.routers.traefik-https.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
+  #     - "traefik.http.routers.traefik-https.entrypoints=websecure"
+  #     - "traefik.http.routers.traefik-https.service=api@internal"
+  #     - "traefik.http.routers.traefik-https.tls.certresolver=letsencryptresolver"
+  #     # Middlewares Rewrites
+  #     - "traefik.http.middlewares.rewrite-overview.replacepathregex.regex=/api/overview"
+  #     - "traefik.http.middlewares.rewrite-overview.replacepathregex.replacement=/api/v1/openapi.json"
+  #     - "traefik.http.routers.backend.middlewares=rewrite-overview"
+  #   networks:
+  #     - app_network      
+
   traefik:
     image: traefik:v2.10.1
     restart: unless-stopped
@@ -33,9 +81,9 @@ services:
     labels:
       - "traefik.enable=true"
       # HTTP Router
-      - "traefik.http.routers.traefik-http.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
-      - "traefik.http.routers.traefik-http.entrypoints=web"
-      - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
+      - "traefik.http.routers.http-to-https.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
+      - "traefik.http.routers.http-to-https.entrypoints=web"
+      - "traefik.http.services.http-to-https.loadbalancer.server.port=8080"
       # www to non-www redirect
       - "traefik.http.routers.traefik-https.middlewares=www-to-non-www"
       # HTTP to HTTPS redirect
@@ -43,16 +91,16 @@ services:
       - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
       # HTTPS Router
-      - "traefik.http.routers.traefik-https.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
-      - "traefik.http.routers.traefik-https.entrypoints=websecure"
-      - "traefik.http.routers.traefik-https.service=api@internal"
-      - "traefik.http.routers.traefik-https.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api/`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.middlewares=rewrite-api-overview"
+      - "traefik.http.routers.backend.tls.certresolver=letsencryptresolver"
       # Middlewares Rewrites
-      - "traefik.http.middlewares.rewrite-overview.replacepathregex.regex=/api/overview"
-      - "traefik.http.middlewares.rewrite-overview.replacepathregex.replacement=/api/v1/openapi.json"
-      #- "traefik.http.routers.backend.middlewares=rewrite-overview"
+      - "traefik.http.middlewares.rewrite-api-overview.replacepathregex.regex=/api/overview"
+      - "traefik.http.middlewares.rewrite-api-overview.replacepathregex.replacement=/api/v1/openapi.json"
     networks:
-      - app_network      
+      - app_network
+
 
   frontend:
     build:
@@ -139,6 +187,77 @@ services:
     networks:
       - app_network
     #logging: *default-logging
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=/prometheus'
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+    networks:
+      - app_network
+    depends_on:
+      - cadvisor
+
+  grafana:
+    image: grafana/grafana-oss
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost:3000/grafana
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - grafana:/var/lib/grafana
+    networks:
+      - app_network
+    depends_on:
+      - loki
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - app_network      
+    depends_on:
+      - backend
+      - frontend
+      - adminer
+      - db
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - 3100:3100
+    networks:
+      - app_network
+    volumes:
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+      # - ./monitoring/loki-config.yml:/etc/loki/loki-config.yaml
+
+  promtail:
+    image: grafana/promtail:latest
+    networks:
+      - app_network      
+    volumes:
+      # - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
+      - ./promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - /var/log:/var/log
+    depends_on:
+      - loki
+
+volumes:
+  grafana:
 
 networks:
   app_network:
