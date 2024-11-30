@@ -5,55 +5,7 @@ x-logging: &default-logging
     max-size: "1m"
     max-file: "1"
 
-services:
-  # traefik:
-  #   image: traefik:v2.10.1
-  #   restart: unless-stopped
-  #   command:
-  #     - "--entrypoints.web.address=:80"
-  #     - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-  #     - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-  #     - "--entrypoints.websecure.address=:443"
-  #     - "--providers.docker=true"
-  #     - "--providers.docker.exposedByDefault=false"
-  #     - "--api"
-  #     - "--certificatesresolvers.letsencryptresolver.acme.email=kapil.kumaria@gmail.com"
-  #     - "--certificatesresolvers.letsencryptresolver.acme.storage=/acme.json"
-  #     - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"
-  #     - "--accesslog=true"
-  #     - "--log.level=ERROR"
-  #   ports:
-  #     - 80:80
-  #     - 443:443
-  #     - 8080:8080
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /home/ubuntu/cv-challenge01/traefik/letsencrypt/acme.json:/acme.json
-  #   labels:
-  #     - "traefik.enable=true"
-  #     # HTTP Router
-  #     - "traefik.http.routers.traefik-http.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
-  #     - "traefik.http.routers.traefik-http.entrypoints=web"
-  #     - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
-  #     # www to non-www redirect
-  #     - "traefik.http.routers.traefik-https.middlewares=www-to-non-www"
-  #     # HTTP to HTTPS redirect
-  #     - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https?://www\\.(.+)"
-  #     - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
-  #     - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
-  #     # HTTPS Router
-  #     - "traefik.http.routers.traefik-https.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
-  #     - "traefik.http.routers.traefik-https.entrypoints=websecure"
-  #     - "traefik.http.routers.traefik-https.service=api@internal"
-  #     - "traefik.http.routers.traefik-https.tls.certresolver=letsencryptresolver"
-  #     # Middlewares Rewrites
-  #     - "traefik.http.middlewares.rewrite-overview.replacepathregex.regex=/api/overview"
-  #     - "traefik.http.middlewares.rewrite-overview.replacepathregex.replacement=/api/v1/openapi.json"
-  #     - "traefik.http.routers.backend.middlewares=rewrite-overview"
-  #   networks:
-  #     - app_network      
-
+services:  
   traefik:
     image: traefik:v2.10.1
     restart: unless-stopped
@@ -107,9 +59,7 @@ services:
       context: ../frontend # Adjust the path to your frontend directory  
     env_file:
       - ../frontend/.env    
-    container_name: frontend
-    # environment:
-    #   - NGINX_REWRITE=/api/overview:/api/v1/openapi.json
+    container_name: frontend    
     depends_on:
       - backend # Ensure the backend service starts first
     ports:
