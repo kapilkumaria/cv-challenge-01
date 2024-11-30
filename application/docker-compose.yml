@@ -32,6 +32,10 @@ services:
       - /home/ubuntu/cv-challenge01/traefik/letsencrypt/acme.json:/acme.json
     labels:
       - "traefik.enable=true"
+      # Router for Traefik Dashboard API
+      #- "traefik.enable=true"
+      # Route for Traefik Dashboard 
+      - "traefik.http.routers.dashboard.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/dashboard`)"
       # HTTP Router
       - "traefik.http.routers.http-to-https.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
       - "traefik.http.routers.http-to-https.entrypoints=web"
@@ -50,6 +54,9 @@ services:
       # Middlewares Rewrites
       - "traefik.http.middlewares.rewrite-api-overview.replacepathregex.regex=/api/overview"
       - "traefik.http.middlewares.rewrite-api-overview.replacepathregex.replacement=/api/v1/openapi.json"
+      # Middleware to strip the prefix "/dashboard"
+      - "traefik.http.middlewares.dashboard-strip-prefix.stripprefix.prefixes=/dashboard"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-strip-prefix"
     networks:
       - app_network
 
@@ -158,12 +165,12 @@ services:
       # HTTP Service
       - traefik.http.services.prometheus.loadbalancer.server.port=9090 # important
       # HTTP Router ()
-      - traefik.http.routers.prometheus-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
+      - traefik.http.routers.prometheus-http.rule=((Host(`boss.kapilkumaria.com`)  || Host(`www.boss.kapilkumaria.com`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-http.entrypoints=web
       # wwww to non-www redirect
       - traefik.http.routers.prometheus-https.middlewares=www-to-non-www
       # HTTPS Router
-      - traefik.http.routers.prometheus-https.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
+      - traefik.http.routers.prometheus-https.rule=((Host(`boss.kapilkumaria.com`)  || Host(`www.boss.kapilkumaria.com`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-https.entrypoints=websecure
       - traefik.http.routers.prometheus-https.tls.certresolver=letsencryptresolver
       - traefik.http.routers.prometheus-https.service=prometheus # optional
@@ -179,12 +186,12 @@ services:
       # HTTP Service
       - traefik.http.services.grafana.loadbalancer.server.port=3000 # important
       # HTTP Router 
-      - traefik.http.routers.grafana-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/grafana`))
+      - traefik.http.routers.grafana-http.rule=((Host(`boss.kapilkumaria.com`)  || Host(`www.boss.kapilkumaria.com`)) && PathPrefix(`/grafana`))
       - traefik.http.routers.grafana-http.entrypoints=web
       # HTTP to HTTPS redirect
       - traefik.http.routers.grafana-https.middlewares=www-to-non-www
       # HTTPS Router
-      - traefik.http.routers.grafana-https.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/grafana`))
+      - traefik.http.routers.grafana-https.rule=((Host(`boss.kapilkumaria.com`)  || Host(`www.boss.kapilkumaria.com`)) && PathPrefix(`/grafana`))
       - traefik.http.routers.grafana-https.entrypoints=websecure
       - traefik.http.routers.grafana-https.tls.certresolver=letsencryptresolver
       - traefik.http.routers.grafana-https.service=grafana # optional

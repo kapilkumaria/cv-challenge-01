@@ -37,30 +37,22 @@ services:
       - "443:443"
       - "8080:8080"
     labels:
-      # - "traefik.enable=true"
-      # - "traefik.http.routers.dashboard.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/dashboard`)"
-      # - "traefik.http.routers.dashboard.service=api@internal"
-      # - "traefik.http.routers.dashboard.entrypoints=websecure"
-      # - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
-      # - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-      # - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
-
-        - "traefik.enable=true"
-        # HTTP Router
-        - "traefik.http.routers.traefik-http.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
-        - "traefik.http.routers.traefik-http.entrypoints=web"
-        - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
-        # www to non-www redirect
-        - "traefik.http.routers.traefik-https.middlewares=www-to-non-www"
-        # HTTP to HTTPS redirect
-        - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https?://www\\.(.+)"
-        - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
-        - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
-        # HTTPS Router
-        - "traefik.http.routers.traefik-https.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
-        - "traefik.http.routers.traefik-https.entrypoints=websecure"
-        - "traefik.http.routers.traefik-https.service=api@internal"
-        - "traefik.http.routers.traefik-https.tls.certresolver=letsencryptresolver" 
+      - "traefik.enable=true"
+      # HTTP Router
+      - "traefik.http.routers.traefik-http.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
+      - "traefik.http.routers.traefik-http.entrypoints=web"
+      - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
+      # www to non-www redirect
+      - "traefik.http.routers.traefik-https.middlewares=www-to-non-www"
+      # HTTP to HTTPS redirect
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https?://www\\.(.+)"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
+      # HTTPS Router
+      - "traefik.http.routers.traefik-https.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
+      - "traefik.http.routers.traefik-https.entrypoints=websecure"
+      - "traefik.http.routers.traefik-https.service=api@internal"
+      - "traefik.http.routers.traefik-https.tls.certresolver=letsencryptresolver" 
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
