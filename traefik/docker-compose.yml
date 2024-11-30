@@ -6,42 +6,65 @@ x-logging: &default-logging
     max-size: "1m"
     max-file: "1"
 
+#include:
+#  - ../traefik/docker-compose.yml
+
 services:
   traefik:
     image: traefik:v2.10
+    restart: unless-stopped
     container_name: traefik
     command:
-      - "--api.insecure=true"
-      - "--api.dashboard=true"
+      #- "--api.insecure=true"
+      #- "--api.dashboard=true"
       - "--providers.docker=true"
       - "--entrypoints.web.address=:80"
       - "--providers.docker.exposedbydefault=false"
+      - "--api"
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.email=kapil.kumaria@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--log.level=DEBUG"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web" # Use this for HTTP challenge
+      # - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"  # Use ths for TLS challenge
+      # - "--log.level=DEBUG"
+      - "--accesslog=true"
+      - "--log.level=ERROR"
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/dashboard`)"
-      #- "traefik.http.routers.backend.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/api`)"  # ADDED THIS
-      #- "traefik.http.routers.backend.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/api/v1`)"
-      #- "traefik.http.middlewares.frontend-stripprefix.stripprefix.prefixes=/dashboard" # UNCOMMENTED THIS
-      - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.entrypoints=websecure"
-      - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
-      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+      # - "traefik.enable=true"
+      # - "traefik.http.routers.dashboard.rule=Host(`boss.kapilkumaria.com`) && PathPrefix(`/dashboard`)"
+      # - "traefik.http.routers.dashboard.service=api@internal"
+      # - "traefik.http.routers.dashboard.entrypoints=websecure"
+      # - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
+      # - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      # - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+
+        - "traefik.enable=true"
+        # HTTP Router
+        - "traefik.http.routers.traefik-http.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
+        - "traefik.http.routers.traefik-http.entrypoints=web"
+        - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
+        # www to non-www redirect
+        - "traefik.http.routers.traefik-https.middlewares=www-to-non-www"
+        # HTTP to HTTPS redirect
+        - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https?://www\\.(.+)"
+        - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
+        - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
+        # HTTPS Router
+        - "traefik.http.routers.traefik-https.rule=Host(`boss.kapilkumaria.com`) || Host(`www.boss.kapilkumaria.com`)"
+        - "traefik.http.routers.traefik-https.entrypoints=websecure"
+        - "traefik.http.routers.traefik-https.service=api@internal"
+        - "traefik.http.routers.traefik-https.tls.certresolver=letsencryptresolver" 
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt"
+      - "./letsencrypt/acme.json:/letsencrypt/acme.json"
     networks:
       - app_network
     logging: *default-logging
@@ -53,4 +76,3 @@ services:
 networks:
   app_network:
     external: true
-
