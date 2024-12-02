@@ -19,4 +19,4 @@ scrape_configs:
       - targets: ["cadvisor:8080"]
   - job_name: "k8s-administration"
     static_configs:
-      - targets: ["44.193.211.220:9100"]
+      - targets: ["44.204.205.128:9100"]
