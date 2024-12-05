@@ -6,9 +6,9 @@ This project sets up the infrastructure for the Boss application using Docker Co
 
 The project is organized into the following structure:
 
-- `application/`: Contains the application stack, including frontend, backend, and database services. Also contains configuration files for monitoring services such as Prometheus, Grafana, Loki, and Promtail.
-- `frontend/`: Contains the source code for the frontend.
-- `backend/`: Contains the source code for the backend.
+- `application/`: Contains the application stack (Contains frontend and backend). Also contains configuration files for monitoring services such as Prometheus, Grafana, Loki, cAdvisor and Promtail. 
+- `frontend/`: Contains the source code for the frontend. Contains the ReactJS application.
+- `backend/`: Contains the source code for the backend. Contains the FastAPI application and PostgreSQL database integration.
 - `traefik/`: Contains configuration files for the Traefik proxy.
 ```
 ➜  cv-challenge01 git:(main) ll
@@ -142,13 +142,15 @@ chmod 600 cv-challenge01/traefik/letsencrypt/acme.json
 Point the A records to your server's IP address.
 Add the following A records in your AWS Route 53 hosted zone (or equivalent DNS management service) to point to your server's public IP address:
 ```
-    www.<your-domain>
-    <your-domain>
+www.<your-domain>
+<your-domain>
 
-    e.g.
+e.g.
 
-    www.boss.kapilkumaria.com
-    boss.kapilkumaria.com
+www.boss.kapilkumaria.com
+boss.kapilkumaria.com
+
+# The domain www.boss.kapilkumaria.com is automatically redirected to HTTPS by Traefik, which acts as the reverse proxy for this application. Traefik is configured to enforce HTTPS for all incoming traffic, ensuring secure communication between the client and the server.
 ```
     Tip: Ensure that your DNS changes propagate correctly by verifying them with tools like nslookup or dig.
 
