@@ -45,7 +45,8 @@ services:
       - "traefik.http.routers.traefik-https.middlewares=www-to-non-www"
       # HTTP to HTTPS redirect
       - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https?://www\\.(.+)"
-      - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
+      # - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$$1"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
       # HTTPS Router
       - "traefik.http.routers.backend.rule=PathPrefix(`/api/`)"
