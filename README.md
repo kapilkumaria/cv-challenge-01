@@ -6,8 +6,10 @@ This project sets up the infrastructure for the Boss application using Docker Co
 
 The project is organized into the following structure:
 
-- `application/`: Contains the application stack, including frontend, backend, and database services.
-- `monitoring/`: Contains configuration files for monitoring services such as Prometheus, Grafana, Loki, and Promtail.
+- `application/`: Contains the application stack, including frontend, backend, and database services. Also contains configuration files for monitoring services such as Prometheus, Grafana, Loki, and Promtail.
+- `frontend/`: Contains the source code for the frontend.
+- `backend/`: Contains the source code for the backend.
+- `traefik/`: Contains configuration files for the Traefik proxy.
 
 ## Features
 
