@@ -13,11 +13,12 @@ The project is organized into the following structure:
 ```
 ➜  cv-challenge01 git:(main) ll
     -rw-rw-r-- 1 ubuntu ubuntu 1.1K Dec  5 01:57 LICENSE
-    -rw-rw-r-- 1 ubuntu ubuntu 7.5K Dec  5 03:58 README.md
+    -rw-rw-r-- 1 ubuntu ubuntu 9.3K Dec  5 04:40 README.md
     drwxrwxr-x 4 ubuntu ubuntu 4.0K Dec  5 02:12 application
     drwxrwxr-x 3 ubuntu ubuntu 4.0K Dec  5 01:57 backend
     -rw-rw-r-- 1 ubuntu ubuntu  221 Dec  5 01:57 docker
     drwxrwxr-x 4 ubuntu ubuntu 4.0K Dec  5 01:57 frontend
+    drwxrwxr-x 2 ubuntu ubuntu 4.0K Dec  5 04:42 images
     drwxrwxr-x 3 ubuntu ubuntu 4.0K Dec  5 01:57 traefik
 ```
 ```
@@ -178,6 +179,13 @@ API Documentation (ReDoc): https://www.boss.kapilkumaria.com/redoc
 Monitoring (Prometheus): https://www.boss.kapilkumaria.com/prometheus
 
 Dashboard (Grafana): https://www.boss.kapilkumaria.com/grafana
+
+<!---- ![login](images/login.png) -->
+![docs](images/docs.png)
+![redoc](images/redoc.png)
+![promtheus](images/prometheus.png)
+![grafana](images/grafana.png)
+<!---- ![adminer](images/adminer.png) -->
 
 ## Traefik Configuration
 
