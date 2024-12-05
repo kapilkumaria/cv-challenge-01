@@ -10,6 +10,65 @@ The project is organized into the following structure:
 - `frontend/`: Contains the source code for the frontend.
 - `backend/`: Contains the source code for the backend.
 - `traefik/`: Contains configuration files for the Traefik proxy.
+```
+➜  cv-challenge01 git:(main) ll
+    -rw-rw-r-- 1 ubuntu ubuntu 1.1K Dec  5 01:57 LICENSE
+    -rw-rw-r-- 1 ubuntu ubuntu 7.5K Dec  5 03:58 README.md
+    drwxrwxr-x 4 ubuntu ubuntu 4.0K Dec  5 02:12 application
+    drwxrwxr-x 3 ubuntu ubuntu 4.0K Dec  5 01:57 backend
+    -rw-rw-r-- 1 ubuntu ubuntu  221 Dec  5 01:57 docker
+    drwxrwxr-x 4 ubuntu ubuntu 4.0K Dec  5 01:57 frontend
+    drwxrwxr-x 3 ubuntu ubuntu 4.0K Dec  5 01:57 traefik
+```
+```
+➜  cv-challenge01 git:(main) tree -L 1 frontend 
+
+frontend
+├── Dockerfile
+├── README.md
+├── biome.json
+├── index.html
+├── modify-openapi-operationids.js
+├── nginx.conf
+├── package-lock.json
+├── package.json
+├── public
+├── src
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+```
+```
+cv-challenge01 git:(main) ✗ tree -L 1 backend 
+
+backend
+├── Dockerfile
+├── README.md
+├── alembic.ini
+├── app
+├── poetry.lock
+├── prestart.sh
+└── pyproject.toml
+```
+```
+➜  cv-challenge01 git:(main) tree application
+application
+├── docker-compose.yml
+├── grafana.yaml
+├── html
+│   └── index.html
+├── loki-config.yaml
+├── loki-config.yml
+├── nginx.conf
+├── prometheus.yaml
+└── promtail-config.yaml
+```
+```
+➜  cv-challenge01 git:(main) tree traefik 
+traefik
+└── letsencrypt
+    └── acme.json
+```
 
 ## Features
 
@@ -27,40 +86,98 @@ The project is organized into the following structure:
 
 ## Prerequisites
 
-1. Ensure Docker and Docker Compose are installed.
-2. Set up the following A records in AWS Route53:
-   - `www.boss.kapilkumaria.com`
-   - `boss.kapilkumaria.com`
-3. Point the A records to your server's IP address.
-
-## Setup
-
-### Clone the Repository
-
-```bash
-git clone <your-repo-url>
-cd <your-project-folder>
-```
-## Configure Environment Variables
+### Configure Environment Variables(Optional):
 
     Adjust database credentials in the backend/.env file.
     Configure Traefik with the domain names in the docker-compose.yml file.
 
-## Run the Application
+### Prometheus(Optional):
 
-Run the application stack and monitoring stack using Docker Compose:
+- You can add additional data source with the URL: http://prometheus:9090/prometheus
+
+### Loki(Optional):
+
+- You can add a new data source with the URL: http://loki:3100
+
+---
+
+# How to Use This Repository
+
+Follow the steps below to set up and deploy the services defined in this repository:
+
+### Step 1: AWS - EC2 Instance Ubuntu, t2.medium with 50GiB Storage Volume
+
+### Step 2: Clone the Repository
+Ensure Docker and Docker Compose are installed on server
+
+### Step 3: Clone the Repository
+
+Clone this repository to your server to access the application and configuration files.
 ```
+git clone https://github.com/kapilkumaria/cv-challenge01.git
+```
+### Step 4: Navigate to the Application Directory
+
+Move into the application folder where the main docker-compose.yml file is located.
+```
+cd cv-challenge01/application
+```
+### Step 5: Create a Docker Network
+
+Create a Docker network named app_network. This network ensures seamless communication between the containers.
+```
+docker network create app_network
+```
+## Step 6: Secure the ACME Configuration
+
+Ensure that the acme.json file (used by Traefik for Let's Encrypt certificates) has the correct permissions for security.
+```
+chmod 600 cv-challenge01/traefik/letsencrypt/acme.json
+```
+    Note: Incorrect permissions may prevent Traefik from functioning properly and could expose sensitive certificate data.
+
+### Step 7: Configure DNS Settings
+
+Point the A records to your server's IP address.
+Add the following A records in your AWS Route 53 hosted zone (or equivalent DNS management service) to point to your server's public IP address:
+```
+    www.<your-domain>
+    <your-domain>
+
+    e.g.
+
+    www.boss.kapilkumaria.com
+    boss.kapilkumaria.com
+```
+    Tip: Ensure that your DNS changes propagate correctly by verifying them with tools like nslookup or dig.
+
+### Step 8: Run the Application (Deploy Services with Docker Compose)
+
+Use Docker Compose to build and deploy the services defined in the docker-compose.yml file. The -d flag runs the containers in detached mode.
+```
+docker compose up -d --build
+# Rebuild the images before starting the containers. Ensure that any changes made to the Dockerfile or other build context (e.g., code files or dependencies) are applied to the services.
+
 docker compose up -d
+# Use existing images as-is without rebuilding them.
 ```
+    Best Practice: Always review the logs after deployment using docker compose logs to ensure all services are running as expected.
 
-## Access the Services
+### Step 9: Access the Application
 
-- Frontend: https://boss.kapilkumaria.com
-- Backend API: https://boss.kapilkumaria.com/api
-- Backend Docs: https://boss.kapilkumaria.com/docs
-- Prometheus: https://boss.kapilkumaria.com/prometheus
-- Grafana: https://boss.kapilkumaria.com/grafana
-- Database Admin: https://boss.kapilkumaria.com/adminer
+Once the services are running, access the deployed application through the following URLs:
+
+Main Application: https://www.boss.kapilkumaria.com
+
+Adminer (Database Management): https://www.boss.kapilkumaria.com/adminer
+
+API Documentation (Swagger UI): https://www.boss.kapilkumaria.com/docs
+
+API Documentation (ReDoc): https://www.boss.kapilkumaria.com/redoc
+
+Monitoring (Prometheus): https://www.boss.kapilkumaria.com/prometheus
+
+Dashboard (Grafana): https://www.boss.kapilkumaria.com/grafana
 
 ## Traefik Configuration
 
@@ -77,15 +194,18 @@ Login to Grafana
       Username: admin
       Password: admin
 
-## Set Up Data Sources
+## Set Up Data Sources for Grafana
+- If you want to add additional data sources, configure in /application/grafana.yaml and the rebuild the docker images.
+  Add a new data source with the URL: http://prometheus:9090/prometheus
 
 ### Prometheus:
 
-- Add a new data source with the URL: http://prometheus:9090/prometheus
+- If you want to scrape metrics from additional servers, add them in /application/prometheus.yaml
 
 ### Loki:
 
-- Add a new data source with the URL: http://loki:3100
+- If you want to add additional data sources, configure in /application/prometheus.yaml and the rebuild the docker images.
+  Add a new data source with the URL: http://loki:3100
 
 ### Import Pre-Built Dashboard
 
@@ -126,7 +246,6 @@ Create a new visualization for Node Logs with the following query:
 
     {job="varlogs"} |~ `$varlog_search`
 ```
-
 ## Functionality
 
 **Container Logs**:
@@ -156,73 +275,9 @@ Create a new visualization for Node Logs with the following query:
 
 - **Service Connectivity**:
         Verify container logs for errors.
-        Ensure environment variables are correctly configured.
+        Ensure environment variables are correctly configured. -->
 
 ---
----
-
-# How to Use This Repository
-
-Follow the steps below to set up and deploy the services defined in this repository:
-
-### Step 1: Clone the Repository
-
-Clone this repository to your server to access the application and configuration files.
-```
-git clone https://github.com/kapilkumaria/cv-challenge01.git
-```
-### Step 2: Navigate to the Application Directory
-
-Move into the application folder where the main docker-compose.yml file is located.
-```
-cd cv-challenge01/application
-```
-### Step 3: Create a Docker Network
-
-Create a Docker network named app_network. This network ensures seamless communication between the containers.
-```
-docker network create app_network
-```
-## Step 4: Secure the ACME Configuration
-
-Ensure that the acme.json file (used by Traefik for Let's Encrypt certificates) has the correct permissions for security.
-```
-chmod 600 cv-challenge01/traefik/letsencrypt/acme.json
-```
-    Note: Incorrect permissions may prevent Traefik from functioning properly and could expose sensitive certificate data.
-
-### Step 5: Configure DNS Settings
-
-Add the following A records in your AWS Route 53 hosted zone (or equivalent DNS management service) to point to your server's public IP address:
-```
-    www.boss.kapilkumaria.com
-    boss.kapilkumaria.com
-```
-    Tip: Ensure that your DNS changes propagate correctly by verifying them with tools like nslookup or dig.
-
-### Step 6: Deploy Services with Docker Compose
-
-Use Docker Compose to build and deploy the services defined in the docker-compose.yml file. The -d flag runs the containers in detached mode.
-```
-docker compose up -d --build
-```
-    Best Practice: Always review the logs after deployment using docker compose logs to ensure all services are running as expected.
-
-### Step 7: Access the Application
-
-Once the services are running, access the deployed application through the following URLs:
-
-Main Application: https://www.boss.kapilkumaria.com
-
-Adminer (Database Management): https://www.boss.kapilkumaria.com/adminer
-
-API Documentation (Swagger UI): https://www.boss.kapilkumaria.com/docs
-
-API Documentation (ReDoc): https://www.boss.kapilkumaria.com/redoc
-
-Monitoring (Prometheus): https://www.boss.kapilkumaria.com/prometheus
-
-Dashboard (Grafana): https://www.boss.kapilkumaria.com/grafana
 
 ## Additional Notes
 
