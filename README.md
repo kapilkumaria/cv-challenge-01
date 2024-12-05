@@ -158,3 +158,80 @@ Create a new visualization for Node Logs with the following query:
         Verify container logs for errors.
         Ensure environment variables are correctly configured.
 
+---
+---
+
+## How to Use This Repository
+
+Follow the steps below to set up and deploy the services defined in this repository:
+
+### Step 1: Clone the Repository
+
+Clone this repository to your server to access the application and configuration files.
+```
+git clone https://github.com/kapilkumaria/cv-challenge01.git
+```
+### Step 2: Navigate to the Application Directory
+
+Move into the application folder where the main docker-compose.yml file is located.
+```
+cd cv-challenge01/application
+```
+### Step 3: Create a Docker Network
+
+Create a Docker network named app_network. This network ensures seamless communication between the containers.
+```
+docker network create app_network
+```
+## Step 4: Secure the ACME Configuration
+
+Ensure that the acme.json file (used by Traefik for Let's Encrypt certificates) has the correct permissions for security.
+```
+chmod 600 cv-challenge01/traefik/letsencrypt/acme.json
+```
+    Note: Incorrect permissions may prevent Traefik from functioning properly and could expose sensitive certificate data.
+
+### Step 5: Configure DNS Settings
+
+Add the following A records in your AWS Route 53 hosted zone (or equivalent DNS management service) to point to your server's public IP address:
+```
+    www.boss.kapilkumaria.com
+    boss.kapilkumaria.com
+```
+    Tip: Ensure that your DNS changes propagate correctly by verifying them with tools like nslookup or dig.
+
+### Step 6: Deploy Services with Docker Compose
+
+Use Docker Compose to build and deploy the services defined in the docker-compose.yml file. The -d flag runs the containers in detached mode.
+```
+docker compose up -d --build
+```
+    Best Practice: Always review the logs after deployment using docker compose logs to ensure all services are running as expected.
+
+### Step 7: Access the Application
+
+Once the services are running, access the deployed application through the following URLs:
+
+Main Application: https://www.boss.kapilkumaria.com
+
+Adminer (Database Management): https://www.boss.kapilkumaria.com/adminer
+
+API Documentation (Swagger UI): https://www.boss.kapilkumaria.com/docs
+
+API Documentation (ReDoc): https://www.boss.kapilkumaria.com/redoc
+
+Monitoring (Prometheus): https://www.boss.kapilkumaria.com/prometheus
+
+Dashboard (Grafana): https://www.boss.kapilkumaria.com/grafana
+
+## Additional Notes
+
+**Scalability**: This repository is designed to scale across environments with minor modifications to docker-compose.yml or Traefik configurations.
+
+**Security**: Ensure you follow best practices for securing access, including using strong passwords and restricting access via firewall or security groups.
+
+## Troubleshooting:
+- Check Traefik logs: docker logs traefik
+- Validate DNS resolution using tools like nslookup or dig.
+
+For further information or contributions, feel free to open an issue or submit a pull request.
