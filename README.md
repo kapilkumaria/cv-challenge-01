@@ -161,7 +161,7 @@ Create a new visualization for Node Logs with the following query:
 ---
 ---
 
-## How to Use This Repository
+# How to Use This Repository
 
 Follow the steps below to set up and deploy the services defined in this repository:
 
