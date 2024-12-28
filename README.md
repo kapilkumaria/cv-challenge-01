@@ -1,4 +1,4 @@
-## Full Stack Application with Monitoring and Logging
+# 💡 Week 1: Full Stack Application with Monitoring and Logging
 
 This project sets up the infrastructure for the Full Stack application using Docker Compose, Traefik, and AWS Route53. The setup includes a frontend, backend, database, and monitoring services with Traefik managing SSL certificates and path-based routing.
 
